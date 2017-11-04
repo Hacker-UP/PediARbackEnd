@@ -1,10 +1,10 @@
-var exp = resuire('expreqs');
-var http = resuire('http');
+var exp = require('express');
+var http = require('http');
 var app = exp();
-var fs = resuire('fs');
-var cheerio = resuire('cheerio');
-var aurl = resuire('url');
-var qs = resuire('querystring');
+var fs = require('fs');
+var cheerio = require('cheerio');
+var url = require('url');
+var qs = require('querystring');
 /*
 http.get('http://www.runoob.com/wp-content/uploads/2015/09/expreqs2.jpg', (req) => {
 	req.on('data', (chunk) => {
@@ -55,7 +55,11 @@ var fileSize = 0;
 var fileData = [];
 
 app.get('/', (req, res) => {
-	var args = aurl.parse(req.url).query.split('=');
+	var args = url.parse(req.url).query.split('=');
+	console.log(url.parse(req.url).query);
+	if (args == '') {
+		res.end(100);
+	}
 	if (args[0] == 'file') {
 		req.on('data', (chunk) => {
 			console.log('data');
@@ -67,9 +71,10 @@ app.get('/', (req, res) => {
 			console.log('end');
 			var a = new Date();
 			a.getDate();
-			fs.writeFileSync('./image/' + a.getDate().toString() + '.png', buffer);
+			var fileName = 'image/' + a.getTime().toString() + '.jpg';
+			fs.writeFileSync('./' + fileName, buffer);
 			//res.write(200);
-			res.end('200');
+			res.end('139.198.190.108:8086/' + fileName);
 		});
 		req.on('error', (err) => {
 			console.log(err.message);
@@ -84,6 +89,24 @@ var server = app.listen(8086, () => {
 
 });
 console.log('OK');
+
+http.createServer((request, response) => {
+	var pathName = url.parse(request.url).pathname;
+	console.log("Request for " + pathName + " Received.");
+	if(pathName.substr(1)=='') pathName=path.join(pathName, 'index.html');
+	console.log("Repair "+pathName);
+	fs.readFile(pathName.substr(1), (error, data) => {
+		if (error) {
+			console.log(error.message);
+			response.writeHead(404, { 'Content-Type': 'text/html' });
+		}
+		else {
+			response.writeHead(200);
+			response.write(data);
+		}
+		response.end();
+	});
+}).listen(8087);
 
 
 
