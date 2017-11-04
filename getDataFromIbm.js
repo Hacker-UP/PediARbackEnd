@@ -19,3 +19,14 @@ request.post({url:`https://gateway-a.watsonplatform.net/visual-recognition/api/v
 			)
   		}
 	});
+
+
+function cheerioLoad(imgArray, testText) {
+	var $ = cheerio.load(testText);
+	$('.imglist-line').each(function(i, elem) {
+		var img = $(this).find('img');
+		img.each(function(i, elem) {
+			imgArray.push($(this).attr('src'));
+		})
+	});
+}
