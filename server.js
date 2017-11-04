@@ -30,32 +30,10 @@ var fileData = [];
 app.get('/', (req, res) => {
 	var args = url.parse(req.url).query.split('=');
 	console.log(url.parse(req.url).query);
-	if (args == '') {
+	if (args == [] || args[0] == ' ') {
 		res.end(100);
 	}
-	if (args[0] == 'file') {
-		req.on('data', (chunk) => {
-			console.log('data');
-			fileData.push(chunk);
-			fileSize += chunk.length;
-		});
-		req.on('end', () => {
-			var buffer = Buffer.concat(fileData, fileSize);
-			console.log('end');
-			var a = new Date();
-			a.getDate();
-			var fileName = 'image/' + a.getTime().toString() + '.jpg';
-			fs.writeFileSync('./' + fileName, buffer);
-			//res.write(200);
-			res.end('139.198.190.108:8086/' + fileName);
-		});
-		req.on('error', (err) => {
-			console.log(err.message);
-			res.writeHead(404);
-			//res.end();
-		});
-	}
-	else if (args[0] == 'word') {
+	if (args[0] == 'word') {
 		term = args[1];
 		let response_handler = function (response) {
 			let body = '';
@@ -64,10 +42,6 @@ app.get('/', (req, res) => {
 			});
 			response.on('end', function () {
 				console.log('\nRelevant Headers:\n');
-				//for (var header in response.headers)
-				// header keys are lower-cased by Node.js
-				//if (header.startsWith("bingapis-") || header.startsWith("x-msedge-"))
-				//	 console.log(header + ": " + response.headers[header]);
 				var contentUrl = [];
 				var format = [];
 				JSON.parse(body).value.forEach(function (element) {
@@ -78,11 +52,7 @@ app.get('/', (req, res) => {
 				contentUrl.forEach((ele) => {
 					l += ele + '\n';
 				});
-				/*format.forEach((ele) => {
-					fs.appendFileSync(term + '_format.txt', ele + '\n');
-				});*/
 				res.end(l);
-				//console.log('\nJSON Response:\n');
 				console.log('success');
 			});
 			response.on('error', function (e) {
@@ -115,16 +85,43 @@ app.get('/', (req, res) => {
 	console.log('POST');
 });
 
+app.post('/', (req, res) => {
+	//var args = url.parse(req.url).query.split('=');
+	//console.log(url.parse(req.url).query);
+	req.on('data', (chunk) => {
+		console.log('data');
+		fileData.push(chunk);
+		fileSize += chunk.length;
+	});
+	req.on('end', () => {
+		var buffer = Buffer.concat(fileData, fileSize);
+		console.log('end');
+		var a = new Date();
+		a.getDate();
+		var fileName = 'image/' + a.getTime().toString() + '.jpg';
+		fs.writeFileSync('./' + fileName, buffer);
+		//res.write(200);
+		res.end('139.198.190.108:8086/' + fileName);
+	});
+	req.on('error', (err) => {
+		console.log(err.message);
+		res.writeHead(404);
+		//res.end();
+	});
+});
+
+
+console.log('OK');
+
 var server = app.listen(8086, () => {
 
 });
 
-
 http.createServer((request, response) => {
 	var pathName = url.parse(request.url).pathname;
 	console.log("Request for " + pathName + " Received.");
-	if(pathName.substr(1)=='') pathName=path.join(pathName, 'index.html');
-	console.log("Repair "+pathName);
+	if (pathName.substr(1) == '') pathName = path.join(pathName, 'index.html');
+	console.log("Repair " + pathName);
 	fs.readFile(pathName.substr(1), (error, data) => {
 		if (error) {
 			console.log(error.message);
